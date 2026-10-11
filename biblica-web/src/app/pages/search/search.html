@@ -1,0 +1,84 @@
+@let s = state();
+@let ov = overview();
+
+<div class="head">
+  <div>
+    <h1 class="page-title">
+      @if (query()) { Results for “{{ query() }}” } @else { Search }
+    </h1>
+    <p class="page-sub">
+      @if (s.status === 'ok') {
+        {{ s.data.total }} {{ s.data.total === 1 ? 'chapter' : 'chapters' }} mention it
+        @if (s.data.pages > 1) { · page {{ s.data.page }} of {{ s.data.pages }} }
+      } @else if (s.status === 'idle') {
+        Type at least 2 characters in the search bar above.
+      } @else {
+        &nbsp;
+      }
+    </p>
+  </div>
+
+  @if (query() && ov.status === 'ok') {
+    <select (change)="filterByBook($any($event.target).value)" aria-label="Only this book">
+      <option value="" [selected]="!bookOrder()">All books</option>
+      @for (b of ov.data.books; track b.order) {
+        <option [value]="b.order" [selected]="b.order === bookOrder()">{{ b.book }}</option>
+      }
+    </select>
+  }
+</div>
+
+@if (s.status === 'loading') {
+  @for (i of [0, 1, 2, 3]; track i) { <div class="result skeleton ph"></div> }
+} @else if (s.status === 'error') {
+  <p class="state error">{{ s.error }}</p>
+} @else if (s.status === 'ok') {
+  @if (s.data.ref; as ref) {
+    <a class="ref card" [routerLink]="ref.id ? ['/read', ref.id] : ['/book', ref.order]">
+      <span>
+        <small>Looks like a reference</small>
+        <strong>{{ ref.book }}{{ ref.chapter ? ' ' + ref.chapter : '' }}</strong>
+      </span>
+      <span class="go">{{ ref.id ? 'Read chapter' : 'Open book' }} <app-icon name="chevron-right" /></span>
+    </a>
+  }
+
+  @for (r of s.data.results; track r.id) {
+    <a class="result" [routerLink]="['/read', r.id]" [queryParams]="{ q: query() }">
+      <div class="result-top">
+        <strong>{{ r.book }} {{ r.chapter }}</strong>
+        @if (r.title) { <span class="title">{{ r.title }}</span> }
+        <span class="hits">{{ r.hits }} {{ r.hits === 1 ? 'match' : 'matches' }}</span>
+      </div>
+      <p [innerHTML]="r.snippet | highlight: query()"></p>
+    </a>
+  } @empty {
+    @if (!s.data.ref) {
+      <p class="state">Nothing found. Try fewer words, or a book name like “Romans”.</p>
+    }
+  }
+
+  @if (s.data.pages > 1) {
+    <nav class="pager" aria-label="Pages">
+      <a
+        class="btn ghost"
+        [class.disabled]="s.data.page <= 1"
+        [routerLink]="[]"
+        [queryParams]="{ page: s.data.page - 1 }"
+        queryParamsHandling="merge"
+      ><app-icon name="chevron-left" /> Previous</a>
+      <span>{{ s.data.page }} / {{ s.data.pages }}</span>
+      <a
+        class="btn ghost"
+        [class.disabled]="s.data.page >= s.data.pages"
+        [routerLink]="[]"
+        [queryParams]="{ page: s.data.page + 1 }"
+        queryParamsHandling="merge"
+      >Next <app-icon name="chevron-right" /></a>
+    </nav>
+  }
+
+  <p class="mode">
+    Search mode: {{ s.data.mode === 'text-index' ? 'text index (fast, matches word forms)' : 'regex scan (exact phrase)' }}
+  </p>
+}

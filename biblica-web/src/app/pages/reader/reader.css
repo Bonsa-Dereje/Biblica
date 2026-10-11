@@ -1,0 +1,36 @@
+.reader { max-width: 760px; margin: 0 auto; padding-bottom: 2rem; }
+.crumbs app-icon { --icon-size: 12px; }
+
+header { border-bottom: 1px solid var(--line); padding-bottom: 1.2rem; margin-bottom: 1.6rem; }
+.heading { font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent-ink); margin: 0 0 0.3rem; }
+h1 { font-size: 1.7rem; font-weight: 600; margin: 0; letter-spacing: -0.015em; }
+.title { color: var(--muted); font-size: 0.85rem; margin: 0.35rem 0 0; }
+
+.facts { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin-top: 0.9rem; font-size: 0.68rem; }
+.facts > span { background: var(--soft); padding: 0.25rem 0.6rem; border-radius: 999px; }
+.find {
+  border: 0; cursor: pointer; font-size: 0.68rem; padding: 0.25rem 0.7rem; border-radius: 999px;
+  background: var(--accent-soft); color: var(--ink);
+}
+.find:disabled { cursor: default; background: var(--soft); color: var(--muted); }
+.clear { color: var(--muted); text-decoration: underline; }
+
+.body {
+  white-space: pre-line;           /* keep the paragraph breaks from the source text */
+  font-family: Georgia, 'Iowan Old Style', 'Times New Roman', serif;
+  font-size: 1.04rem; line-height: 1.85; color: #222;
+  overflow-wrap: anywhere;
+}
+
+.pager { display: flex; justify-content: space-between; gap: 1rem; margin-top: 2.4rem; --icon-size: 14px; }
+.keys { text-align: center; font-size: 0.65rem; color: var(--muted); margin-top: 1rem; }
+
+.ph-title { height: 42px; width: 50%; margin-bottom: 1.6rem; }
+.ph-line { height: 16px; margin-bottom: 0.9rem; }
+.ph-line:nth-child(3n) { width: 82%; }
+
+@media (max-width: 640px) {
+  h1 { font-size: 1.35rem; }
+  .body { font-size: 0.98rem; }
+  .keys { display: none; }
+}

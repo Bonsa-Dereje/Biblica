@@ -1,0 +1,58 @@
+<div class="field" [class.focused]="open()">
+  <app-icon name="search" class="lead" />
+  <input
+    #input
+    type="search"
+    placeholder="Search the commentary — try “John 3” or “grace”"
+    autocomplete="off"
+    spellcheck="false"
+    aria-label="Search the commentary"
+    role="combobox"
+    aria-controls="search-options"
+    [attr.aria-expanded]="open() && query().trim().length >= 2"
+    [value]="query()"
+    (input)="onInput(input.value)"
+    (focus)="open.set(true)"
+    (keydown)="onKeydown($event)"
+  />
+  @if (query()) {
+    <button type="button" class="clear" (click)="clear()" aria-label="Clear search">
+      <app-icon name="close" />
+    </button>
+  } @else {
+    <kbd>/</kbd>
+  }
+</div>
+
+@if (open() && query().trim().length >= 2) {
+  <div class="panel" id="search-options" role="listbox">
+    @let s = state();
+    @if (s.status === 'loading') {
+      <p class="note"><span class="spinner"></span> Searching…</p>
+    } @else if (s.status === 'error') {
+      <p class="note error">{{ s.error }}</p>
+    } @else if (s.status === 'ok') {
+        @if (!options().length) {
+          <p class="note">Nothing found for “{{ query().trim() }}”.</p>
+        }
+        @for (opt of options(); track $index) {
+          <button
+            type="button"
+            role="option"
+            class="option"
+            [class.ref]="opt.kind === 'ref'"
+            [class.all]="opt.kind === 'all'"
+            [class.active]="$index === activeIndex()"
+            [attr.aria-selected]="$index === activeIndex()"
+            (mouseenter)="activeIndex.set($index)"
+            (click)="choose(opt)"
+          >
+            <span class="title">{{ opt.title }}</span>
+            @if (opt.detail) {
+              <span class="detail" [innerHTML]="opt.detail | highlight: query()"></span>
+            }
+          </button>
+        }
+    }
+  </div>
+}

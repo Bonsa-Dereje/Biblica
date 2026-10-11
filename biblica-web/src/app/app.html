@@ -1,0 +1,43 @@
+<div class="frame">
+  <nav class="sidebar" aria-label="Main">
+    <a routerLink="/" class="logo" aria-label="Biblica home">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5 19 18H5z" /></svg>
+    </a>
+
+    <div class="nav">
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" title="Dashboard" aria-label="Dashboard">
+        <app-icon name="home" />
+      </a>
+      <a routerLink="/books" routerLinkActive="active" title="All books" aria-label="All books">
+        <app-icon name="grid" />
+      </a>
+      <a routerLink="/search" routerLinkActive="active" title="Search results" aria-label="Search results">
+        <app-icon name="search" />
+      </a>
+      <button type="button" (click)="openRandom()" [class.busy]="randomLoading()" title="Random chapter" aria-label="Open a random chapter">
+        <app-icon name="shuffle" />
+      </button>
+    </div>
+
+    <a class="bottom" [href]="apiUrl + '?action=overview'" target="_blank" rel="noopener" title="Raw API (JSON)" aria-label="Open the raw API in a new tab">
+      <app-icon name="code" />
+    </a>
+  </nav>
+
+  <div class="workspace">
+    <header class="topbar">
+      <app-search-box />
+      <div class="who">
+        <div class="who-text">
+          <strong>Matthew Henry</strong>
+          <span>Complete Commentary</span>
+        </div>
+        <span class="avatar" aria-hidden="true">MH</span>
+      </div>
+    </header>
+
+    <main>
+      <router-outlet />
+    </main>
+  </div>
+</div>

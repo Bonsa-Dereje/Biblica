@@ -1,0 +1,56 @@
+@let s = state();
+
+@if (s.status === 'loading') {
+  <div class="reader">
+    <div class="skeleton ph-title"></div>
+    @for (i of [0, 1, 2, 3, 4, 5]; track i) { <div class="skeleton ph-line"></div> }
+  </div>
+} @else if (s.status === 'error') {
+  <p class="state error">{{ s.error }}</p>
+  <a class="btn" routerLink="/">Back to dashboard</a>
+} @else {
+  @let ch = s.data.chapter;
+
+  <article class="reader">
+    <nav class="crumbs">
+      <a routerLink="/books">Books</a>
+      <app-icon name="chevron-right" />
+      <a [routerLink]="['/book', ch.order]">{{ ch.book }}</a>
+      <app-icon name="chevron-right" />
+      <span>Chapter {{ ch.chapter }}</span>
+    </nav>
+
+    <header>
+      <p class="heading">{{ ch.heading }}</p>
+      <h1>{{ ch.book }} {{ ch.chapter }}</h1>
+      @if (ch.title) { <p class="title">{{ ch.title }}</p> }
+      <div class="facts">
+        <span>{{ ch.chars | compact }} characters</span>
+        @if (ch.verse_numbers?.length) { <span>{{ ch.verse_numbers?.length }} verses</span> }
+        @if (query()) {
+          <button type="button" class="find" (click)="nextMatch()" [disabled]="!matchCount()">
+            {{ matchCount() }} {{ matchCount() === 1 ? 'match' : 'matches' }} for “{{ query() }}”
+            @if (matchCount()) { · next ↓ }
+          </button>
+          <a class="clear" [routerLink]="['/read', ch.id]">clear</a>
+        }
+      </div>
+    </header>
+
+    <div class="body" #body [innerHTML]="ch.text | highlight: query()"></div>
+
+    <nav class="pager" aria-label="Chapters">
+      @if (s.data.prev; as prev) {
+        <a class="btn ghost" [routerLink]="['/read', prev.id]" [queryParams]="{ q: query() || null }">
+          <app-icon name="chevron-left" /> {{ prev.book }} {{ prev.chapter }}
+        </a>
+      } @else { <span></span> }
+      @if (s.data.next; as next) {
+        <a class="btn" [routerLink]="['/read', next.id]" [queryParams]="{ q: query() || null }">
+          {{ next.book }} {{ next.chapter }} <app-icon name="chevron-right" />
+        </a>
+      }
+    </nav>
+    <p class="keys">Tip: use ← and → to move between chapters.</p>
+  </article>
+}

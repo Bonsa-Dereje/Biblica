@@ -1,0 +1,183 @@
+@let ov = overview();
+
+<div class="layout">
+  <section class="main-col">
+    <!-- Hero ------------------------------------------------------------ -->
+    <div class="card hero">
+      <div class="hero-text">
+        <h1>{{ greeting }}</h1>
+        <p>
+          Matthew Henry's complete commentary,
+          @if (ov.status === 'ok') {
+            {{ ov.data.totals.books }} books and {{ ov.data.totals.chapters }} chapters.
+          } @else {
+            every book of the Bible.
+          }
+          Search a word, or jump straight to a reference like <strong>John 3</strong>.
+        </p>
+        <button class="btn" type="button" (click)="openRandom()" [disabled]="randomLoading()">
+          @if (randomLoading()) { <span class="spinner light"></span> } Read a random chapter
+        </button>
+      </div>
+
+      <!-- Original illustration: open book with a bookmark and a plant -->
+      <svg class="hero-art" viewBox="0 0 220 160" aria-hidden="true">
+        <ellipse cx="118" cy="146" rx="86" ry="8" fill="#e7e7ec" />
+        <path d="M30 120c-8-22 2-40 14-46-2 14 2 30 12 40-8-2-18 0-26 6z" fill="#b9d7d9" />
+        <path d="M44 124c4-24 18-36 32-36-8 10-12 24-10 40-8-6-16-6-22-4z" fill="#8fc0c4" />
+        <path d="M58 128 62 146h24l4-18z" fill="#d6d9e0" />
+        <path d="M118 60c-22-10-46-12-62-6v74c16-6 40-4 62 6z" fill="#fff" stroke="#111" stroke-width="2.5" stroke-linejoin="round" />
+        <path d="M118 60c22-10 46-12 62-6v74c-16-6-40-4-62 6z" fill="#fff" stroke="#111" stroke-width="2.5" stroke-linejoin="round" />
+        <path d="M118 60v74" stroke="#111" stroke-width="2.5" />
+        <g stroke="#c8c8d0" stroke-width="2.5" stroke-linecap="round">
+          <path d="M70 72c12-3 26-2 38 3M70 84c12-3 26-2 38 3M70 96c12-3 26-2 38 3M70 108c10-2 20-2 30 1" />
+          <path d="M128 75c12-5 26-6 38-3M128 87c12-5 26-6 38-3M128 99c12-5 26-6 38-3" />
+        </g>
+        <path d="M150 50v40l8-7 8 7V48c-6-1-11 0-16 2z" fill="#f7931e" />
+        <circle cx="186" cy="30" r="6" fill="#f7931e" opacity=".35" />
+        <circle cx="60" cy="34" r="4" fill="#111" opacity=".12" />
+      </svg>
+    </div>
+
+    <!-- Featured chapters ("Trending Blogs" in the design) -------------- -->
+    <div>
+      <div class="section-head">
+        <h2>Start here</h2>
+        <a routerLink="/books">View all books</a>
+      </div>
+
+      @let fe = featured();
+      <div class="featured">
+        @if (fe.status === 'loading') {
+          @for (i of [0, 1, 2]; track i) { <div class="feature skeleton"></div> }
+        } @else if (fe.status === 'error') {
+          <p class="state error">{{ fe.error }}</p>
+        } @else {
+          @for (ch of fe.data.chapters; track ch.id; let i = $index) {
+            <a
+              class="feature"
+              [class.dark]="i === highlightedCard()"
+              [routerLink]="['/read', ch.id]"
+              (mouseenter)="highlightedCard.set(i)"
+            >
+              <h3>{{ ch.book }} {{ ch.chapter }}</h3>
+              <p>{{ ch.title || ch.preview }}</p>
+              <div class="feature-foot">
+                <span class="pill">{{ ch.verseCount || '—' }} verses</span>
+                <span class="meta"><app-icon name="type" /> {{ ch.chars | compact }}</span>
+              </div>
+            </a>
+          }
+        }
+      </div>
+    </div>
+
+    <!-- Analytics ---------------------------------------------------------- -->
+    <div class="card analytics">
+      <div class="analytics-head">
+        <div>
+          <h2>Analytics</h2>
+          <p class="hint">
+            @if (chartMode() === 'books') {
+              Commentary length per book. Click a point to open that book.
+            } @else {
+              Chapter lengths in {{ chartBookName() }}. Click a point to read it.
+            }
+          </p>
+        </div>
+        <div class="analytics-controls">
+          @if (chartMode() === 'chapters' && ov.status === 'ok') {
+            <select [value]="chartBook()" (change)="onBookSelect($any($event.target).value)" aria-label="Book">
+              @for (b of ov.data.books; track b.order) {
+                <option [value]="b.order" [selected]="b.order === chartBook()">{{ b.book }}</option>
+              }
+            </select>
+          }
+          <div class="toggle" role="group" aria-label="Chart range">
+            <button type="button" [class.on]="chartMode() === 'books'" (click)="chartMode.set('books')">Books</button>
+            <button type="button" [class.on]="chartMode() === 'chapters'" (click)="chartMode.set('chapters')">Chapters</button>
+          </div>
+        </div>
+      </div>
+
+      @if (chartLoading()) {
+        <div class="chart-skeleton skeleton"></div>
+      } @else {
+        <app-line-chart
+          [points]="chartPoints()"
+          [clickable]="true"
+          [ariaLabel]="chartMode() === 'books' ? 'Characters per book' : 'Characters per chapter'"
+          (pointClick)="onChartPoint($event)"
+        />
+      }
+    </div>
+  </section>
+
+  <!-- Right column --------------------------------------------------------- -->
+  <aside class="side-col card">
+    @if (ov.status === 'error') {
+      <p class="state error">{{ ov.error }}</p>
+    }
+
+    <div class="stats">
+      <a class="stat white" routerLink="/books">
+        <span class="stat-icon peach"><app-icon name="book" /></span>
+        <span class="stat-text">
+          <small>Books</small>
+          <strong>@if (ov.status === 'ok') { {{ ov.data.totals.books }} } @else { … }</strong>
+        </span>
+        <app-icon name="chevron-right" class="chev" />
+      </a>
+      <a class="stat white" routerLink="/books">
+        <span class="stat-icon lilac"><app-icon name="layers" /></span>
+        <span class="stat-text">
+          <small>Chapters</small>
+          <strong>@if (ov.status === 'ok') { {{ ov.data.totals.chapters.toLocaleString() }} } @else { … }</strong>
+        </span>
+        <app-icon name="chevron-right" class="chev" />
+      </a>
+      <a class="stat white" routerLink="/search">
+        <span class="stat-icon mint"><app-icon name="type" /></span>
+        <span class="stat-text">
+          <small>Characters of commentary</small>
+          <strong>@if (ov.status === 'ok') { {{ ov.data.totals.chars | compact }} } @else { … }</strong>
+        </span>
+        <app-icon name="chevron-right" class="chev" />
+      </a>
+    </div>
+
+    <div>
+      <div class="section-head">
+        <h2>Books</h2>
+        <a routerLink="/books">View all</a>
+      </div>
+      <div class="strip-wrap">
+        <div class="strip" #strip>
+          @if (ov.status === 'ok') {
+            @for (b of ov.data.books; track b.order) {
+              <a class="chip" [class.nt]="b.testament === 'NT'" [routerLink]="['/book', b.order]" [title]="b.book">
+                <span class="chip-abbr">{{ b.book | bookAbbrev }}</span>
+                <span class="chip-name">{{ b.book }}</span>
+              </a>
+            }
+          } @else {
+            @for (i of [0, 1, 2, 3]; track i) { <div class="chip skeleton"></div> }
+          }
+        </div>
+        <button type="button" class="strip-next" (click)="scrollStrip(strip)" aria-label="Scroll books">
+          <app-icon name="chevron-right" />
+        </button>
+      </div>
+    </div>
+
+    <div class="tips white">
+      <p>Search by <strong>reference</strong> or by <strong>phrase</strong>.</p>
+      <div class="examples">
+        @for (q of examples; track q) {
+          <a [routerLink]="['/search']" [queryParams]="{ q }">{{ q }}</a>
+        }
+      </div>
+      <a class="btn" routerLink="/books">Browse all books</a>
+    </div>
+  </aside>
+</div>

@@ -1,0 +1,24 @@
+.filter {
+  width: min(100%, 320px); height: 40px; border: 1px solid var(--line); border-radius: 10px;
+  padding: 0 0.8rem; font: inherit; font-size: 0.82rem; background: var(--soft); margin-bottom: 1.6rem;
+}
+.filter:focus { outline: none; border-color: var(--line-strong); background: var(--surface); }
+
+section { margin-bottom: 1.8rem; }
+.count { font-size: 0.7rem; color: var(--muted); }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; }
+.book {
+  display: flex; align-items: center; gap: 0.75rem; padding: 12px; border-radius: 14px;
+  background: var(--soft); transition: background 0.15s, transform 0.15s;
+}
+.book:hover { background: var(--soft-2); transform: translateY(-1px); }
+.abbr {
+  width: 42px; height: 42px; border-radius: 11px; flex-shrink: 0; display: grid; place-items: center;
+  background: var(--ink); color: #fff; font-size: 0.78rem; font-weight: 600;
+  background-image: radial-gradient(circle at 70% 20%, rgb(247 147 30 / 0.45), transparent 60%);
+}
+.abbr.nt { background-image: radial-gradient(circle at 70% 20%, rgb(143 192 196 / 0.55), transparent 60%); }
+.info { display: flex; flex-direction: column; min-width: 0; }
+.info strong { font-size: 0.82rem; font-weight: 600; }
+.info small { font-size: 0.66rem; color: var(--muted); }
